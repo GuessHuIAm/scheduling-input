@@ -2,6 +2,7 @@
     import Calendar from '@event-calendar/core';
     import TimeGrid from '@event-calendar/time-grid';
     import Interaction from '@event-calendar/interaction';
+    import '@event-calendar/core/index.css';
 
     let calendar;
     let plugins = [TimeGrid, Interaction];
