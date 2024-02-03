@@ -1,3 +1,5 @@
+<!-- probably need to rework this to be more svelte friendly-->
+
 <div class="toggle-button-cover">
     <div class="button-cover">
       <div class="button b2" id="button-13">
