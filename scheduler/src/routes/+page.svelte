@@ -24,13 +24,10 @@
         const events = calendar.getEvents();
 
         if (selectPhase) {
+           
             if (isNewEvent) {
                 calendar.unselect();
-                event = {
-                    id: createEventId(),
-                    start: info.startStr,
-                    end: info.endStr,
-                };
+                event = makeEvent("event", info.startStr, info.endStr);
                 calendar.addEvent(event);
             } else {
                 event = info.event;
@@ -38,51 +35,47 @@
             selectionStart = new Date(event.start);
             selectionEnd = new Date(event.end);
             console.log(selectionStart, selectionEnd);
-        
-        if (isNewEvent) {
-            calendar.unselect();
-            event = makeEvent("event", info.startStr, info.endStr);
-            calendar.addEvent(event);
-        } else {
-            event = info.event;
-        }
-        selectionStart = new Date(event.start);
-        selectionEnd = new Date(event.end);
-        console.log(selectionStart, selectionEnd);
 
-        events.forEach((e) => {
-            if (e.id === event.id || e.extendedProps.type != event.extendedProps.type) {
-                return;
+            events.forEach((e) => {
+                if (e.id === event.id || e.extendedProps.type != event.extendedProps.type) {
+                    return;
+                }
+
+                const eStart = new Date(e.start);
+                const eEnd = new Date(e.end);
+
+                console.log(eStart, eEnd);
+
+                if (isTimeOverlap(eStart, eEnd, selectionStart, selectionEnd)) {
+                    console.log("Overlap between " + e.id + " and " + event.id);
+                    const newStart = eStart < selectionStart ? e.start : event.start;
+                    const newEnd = eEnd > selectionEnd ? e.end : event.end;
+
+                    calendar.removeEventById(e.id);
+                    event.start = newStart;
+                    event.end = newEnd;
+                }
+            });
+
+            calendar.updateEvent(event);
+
+        } else if (!selectPhase) { // will make this less naive later
+
+            events.forEach((e) => {
+                if (e.extendedProps.type === 'event') {
+                    e.display = 'background';
+                    e.editable = false;
+                }
+            })
+
+            if (isNewEvent) {
+                calendar.unselect();
+                event = makeEvent("comment", info.startStr, info.endStr)
+                calendar.addEvent(event);
+            } else {
+                event = info.event;
             }
-
-            const eStart = new Date(e.start);
-            const eEnd = new Date(e.end);
-
-            console.log(eStart, eEnd);
-
-            if (isTimeOverlap(eStart, eEnd, selectionStart, selectionEnd)) {
-                console.log("Overlap between " + e.id + " and " + event.id);
-                const newStart = eStart < selectionStart ? e.start : event.start;
-                const newEnd = eEnd > selectionEnd ? e.end : event.end;
-
-                calendar.removeEventById(e.id);
-                event.start = newStart;
-                event.end = newEnd;
-            }
-        });
-
-        calendar.updateEvent(event);
-
-// will make this less naive later
-        } else if (!selectPhase) {
-            calendar.unselect();
-                event = {
-                    id: createEventId(),
-                    start: info.startStr,
-                    end: info.endStr,
-                    comment: comment,
-                };
-            calendar.addEvent(event);
+            
         }
     }
 
@@ -118,6 +111,7 @@
     console.log(selectPhase);
 
     $: testText = selectPhase ? 'in selection phase!' : 'in commenting phase!';
+
 
 /* Play Area [end] */
 
