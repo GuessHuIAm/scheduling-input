@@ -3,6 +3,7 @@
     import TimeGrid from '@event-calendar/time-grid';
     import Interaction from '@event-calendar/interaction';
     import '@event-calendar/core/index.css';
+    import PhaseToggle from './phaseToggle.svelte';
 
     let calendar;
     let plugins = [TimeGrid, Interaction];
@@ -29,4 +30,5 @@
     }
 </script>
 
+<PhaseToggle />
 <Calendar bind:this={calendar} {plugins} {options} />
