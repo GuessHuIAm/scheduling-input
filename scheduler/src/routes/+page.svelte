@@ -19,17 +19,11 @@
 
     function handleEvent(info, isNewEvent) {
         let event, selectionStart, selectionEnd;
-        console.log(info);
         const events = calendar.getEvents();
-        console.log(events);
 
         if (isNewEvent) {
             calendar.unselect();
-            event = {
-                id: createEventId(),
-                start: info.startStr,
-                end: info.endStr,
-            };
+            event = makeEvent("event", info.startStr, info.endStr);
             calendar.addEvent(event);
         } else {
             event = info.event;
@@ -39,7 +33,9 @@
         console.log(selectionStart, selectionEnd);
 
         events.forEach((e) => {
-            if (!isNewEvent && e.id === event.id) return;
+            if (e.id === event.id || e.extendedProps.type != event.extendedProps.type) {
+                return;
+            }
 
             const eStart = new Date(e.start);
             const eEnd = new Date(e.end);
@@ -65,8 +61,19 @@
         return start1 <= end2 && end1 >= start2;
     }
 
-    function createEventId() {
+    function createEventId(type) {
         return String(Date.now());
+    }
+
+    function makeEvent(type, start, end) {
+        return {
+            id: createEventId(type),
+            start: start,
+            end: end,
+            extendedProps: {
+                type: type,
+            },
+        };
     }
 
 /* Play Area Containment */
