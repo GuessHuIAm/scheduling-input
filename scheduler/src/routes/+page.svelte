@@ -25,6 +25,20 @@
 
         if (selectPhase) {
            
+            events.forEach((e) => {
+                if (e.extendedProps.type === 'comment') {
+                    //e.display = 'background';
+                    e.editable = false;
+                    e.startEditable = false;
+                    e.durationEditable = false;
+                } else if (e.extendedProps.type === 'event') {
+                    e.display = 'auto';
+                    e.editable = true;
+                }
+                calendar.updateEvent(e);
+            })
+
+
             if (isNewEvent) {
                 calendar.unselect();
                 event = makeEvent("event", info.startStr, info.endStr);
@@ -60,12 +74,17 @@
             calendar.updateEvent(event);
 
         } else if (!selectPhase) { // will make this less naive later
-
             events.forEach((e) => {
                 if (e.extendedProps.type === 'event') {
-                    e.display = 'background';
+                    //e.display = 'background';
                     e.editable = false;
+                    e.startEditable = false;
+                    e.durationEditable = false;
+                } else if (e.extendedProps.type === 'comment') {
+                    e.display = 'auto';
+                    e.editable = true;
                 }
+                calendar.updateEvent(e);
             })
 
             if (isNewEvent) {
@@ -76,6 +95,8 @@
                 event = info.event;
             }
             
+            calendar.updateEvent(event);
+
         }
     }
 
@@ -96,6 +117,8 @@
             extendedProps: {
                 type: type,
             },
+            editable: true,
+            display: 'auto',
         };
     }
 
