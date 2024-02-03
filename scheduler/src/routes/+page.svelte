@@ -68,6 +68,30 @@
     function createEventId() {
         return String(Date.now());
     }
+
+/* Play Area Containment */
+
+    let selectPhase = true;
+    let testText;
+
+    function switchPhase() {
+        selectPhase = !selectPhase;
+        console.log('I have switched!');
+    }
+    console.log(selectPhase);
+
+    if (selectPhase) {
+        testText = 'in selection phase!'
+    } else {
+        testText = 'in commenting phase!'
+    }
+
+/* Play Area [end] */
+
 </script>
 
+
+<button on:click={switchPhase}> <!-- how to get button in line with toolbar?--> 
+    We are {testText}
+</button>
 <Calendar bind:this={calendar} {plugins} {options} />
