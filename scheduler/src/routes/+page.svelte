@@ -23,7 +23,6 @@
         let event, selectionStart, selectionEnd;
         const events = calendar.getEvents();
 
-<<<<<<< HEAD
         if (selectPhase) {
             if (isNewEvent) {
                 calendar.unselect();
@@ -40,7 +39,6 @@
             selectionEnd = new Date(event.end);
             console.log(selectionStart, selectionEnd);
         
-=======
         if (isNewEvent) {
             calendar.unselect();
             event = makeEvent("event", info.startStr, info.endStr);
@@ -52,7 +50,6 @@
         selectionEnd = new Date(event.end);
         console.log(selectionStart, selectionEnd);
 
->>>>>>> 306270567c4d0fd58eec7aadfbe5e679989dc560
         events.forEach((e) => {
             if (e.id === event.id || e.extendedProps.type != event.extendedProps.type) {
                 return;
