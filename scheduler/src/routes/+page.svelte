@@ -17,27 +17,30 @@
         eventResize: (info) => handleEvent(info, false),
     };
 
+    let comment = "";
+
     function handleEvent(info, isNewEvent) {
         let event, selectionStart, selectionEnd;
         console.log(info);
         const events = calendar.getEvents();
         console.log(events);
 
-        if (isNewEvent) {
-            calendar.unselect();
-            event = {
-                id: createEventId(),
-                start: info.startStr,
-                end: info.endStr,
-            };
-            calendar.addEvent(event);
-        } else {
-            event = info.event;
-        }
-        selectionStart = new Date(event.start);
-        selectionEnd = new Date(event.end);
-        console.log(selectionStart, selectionEnd);
-
+        if (selectPhase) {
+            if (isNewEvent) {
+                calendar.unselect();
+                event = {
+                    id: createEventId(),
+                    start: info.startStr,
+                    end: info.endStr,
+                };
+                calendar.addEvent(event);
+            } else {
+                event = info.event;
+            }
+            selectionStart = new Date(event.start);
+            selectionEnd = new Date(event.end);
+            console.log(selectionStart, selectionEnd);
+        
         events.forEach((e) => {
             if (!isNewEvent && e.id === event.id) return;
 
@@ -58,6 +61,18 @@
         });
 
         calendar.updateEvent(event);
+
+// will make this less naive later
+        } else if (!selectPhase) {
+            calendar.unselect();
+                event = {
+                    id: createEventId(),
+                    start: info.startStr,
+                    end: info.endStr,
+                    comment: comment,
+                };
+            calendar.addEvent(event);
+        }
     }
 
     function isTimeOverlap(start1, end1, start2, end2) {
@@ -80,18 +95,12 @@
     }
     console.log(selectPhase);
 
-    if (selectPhase) {
-        testText = 'in selection phase!'
-    } else {
-        testText = 'in commenting phase!'
-    }
+    $: testText = selectPhase ? 'in selection phase!' : 'in commenting phase!';
 
 /* Play Area [end] */
 
 </script>
 
-
-<button on:click={switchPhase}> <!-- how to get button in line with toolbar?--> 
-    We are {testText}
-</button>
+<p> hey can we please be in {testText}</p>
+<button on:click={switchPhase}>Switch Phase</button>
 <Calendar bind:this={calendar} {plugins} {options} />
