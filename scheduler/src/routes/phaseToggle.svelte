@@ -21,23 +21,6 @@
     outline: none;
     }
 
-    body {
-    font-family: Arial, Helvetica, sans-serif;
-    margin: 0;
-    background-color: #f1f9f9;
-    }
-
-    #app-cover {
-    display: table;
-    width: 600px;
-    margin: 80px auto;
-    counter-reset: button-counter;
-    }
-
-    .row {
-    display: table-row;
-    }
-
     .toggle-button-cover {
     display: table-cell;
     position: relative;
