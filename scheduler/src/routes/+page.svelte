@@ -34,7 +34,10 @@
             console.log(selectionStart, selectionEnd);
 
             events.forEach((e) => {
-                if (e.id === event.id || e.extendedProps.type != event.extendedProps.type) {
+                if (
+                    e.id === event.id ||
+                    e.extendedProps.type != event.extendedProps.type
+                ) {
                     return;
                 }
 
@@ -45,7 +48,8 @@
 
                 if (isTimeOverlap(eStart, eEnd, selectionStart, selectionEnd)) {
                     console.log("Overlap between " + e.id + " and " + event.id);
-                    const newStart = eStart < selectionStart ? e.start : event.start;
+                    const newStart =
+                        eStart < selectionStart ? e.start : event.start;
                     const newEnd = eEnd > selectionEnd ? e.end : event.end;
 
                     calendar.removeEventById(e.id);
@@ -58,12 +62,12 @@
         } else if (!selectMode) {
             if (isNewEvent) {
                 calendar.unselect();
-                event = makeEvent("comment", info.startStr, info.endStr)
+                event = makeEvent("comment", info.startStr, info.endStr);
                 calendar.addEvent(event);
             } else {
                 event = info.event;
             }
-            
+
             calendar.updateEvent(event);
         }
     }
@@ -86,47 +90,66 @@
                 type: type,
             },
             editable: true,
-            display: 'auto',
-            backgroundColor: type === 'event' ? 'var(--color-event)' : 'var(--color-comment)',
+            display: "auto",
+            backgroundColor:
+                type === "event"
+                    ? "var(--color-event)"
+                    : "var(--color-comment)",
         };
     }
 
     let selectMode = true;
+    $: selectionText = selectMode
+        ? "Drag to select the times you are available."
+        : "Drag to annotate your availability.";
     function switchPhase() {
         selectMode = !selectMode;
         const events = calendar.getEvents();
         if (selectMode)
             events.forEach((e) => {
-                if (e.extendedProps.type === 'event') {
-                    e.display = 'auto';
+                if (e.extendedProps.type === "event") {
+                    e.display = "auto";
                     e.editable = true;
-                } else if (e.extendedProps.type === 'comment') {
-                    e.display = 'background';
+                } else if (e.extendedProps.type === "comment") {
+                    e.display = "background";
                     e.editable = false;
                     e.startEditable = false;
                     e.durationEditable = false;
                 }
                 calendar.updateEvent(e);
-            })
+            });
         else
             events.forEach((e) => {
-                if (e.extendedProps.type === 'event') {
-                    e.display = 'background';
+                if (e.extendedProps.type === "event") {
+                    e.display = "background";
                     e.editable = false;
                     e.startEditable = false;
                     e.durationEditable = false;
-                } else if (e.extendedProps.type === 'comment') {
-                    e.display = 'auto';
+                } else if (e.extendedProps.type === "comment") {
+                    e.display = "auto";
                     e.editable = true;
                 }
                 calendar.updateEvent(e);
-            })
+            });
     }
-
+    $: colorPreview = selectMode
+        ? "var(--color-event)"
+        : "var(--color-comment)";
 </script>
 
-<div class="mode-button-container">
-    <button class="mode-button {selectMode ? 'selected' : ''}" on:click={switchPhase}>Selection Mode</button>
-    <button class="mode-button comment-mode {!selectMode ? 'selected' : ''}" on:click={switchPhase}>Comment Mode</button>
+<div style="--color-preview: {colorPreview}">
+    <div class="sticky-header mode-button-container">
+        <button
+            class="mode-button {selectMode ? 'selected' : ''}"
+            on:click={switchPhase}>Selection Mode</button
+        >
+        <button
+            class="mode-button comment-mode {!selectMode ? 'selected' : ''}"
+            on:click={switchPhase}>Comment Mode</button
+        >
+    </div>
+    <div class="center-text">
+        {selectionText}
+    </div>
+    <Calendar bind:this={calendar} {plugins} {options} />
 </div>
-<Calendar bind:this={calendar} {plugins} {options} />
