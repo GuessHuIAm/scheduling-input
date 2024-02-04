@@ -135,17 +135,28 @@
     $: colorPreview = selectMode
         ? "var(--color-event)"
         : "var(--color-comment)";
+
+    let otherVisibility = false;
+    function toggleOtherVisibility() {
+        otherVisibility = !otherVisibility;
+    }
 </script>
 
 <div style="--color-preview: {colorPreview}">
-    <div class="sticky-header mode-button-container">
+    <div class="sticky-header">
+        <div class="mode-button-container">
+            <button
+                class="mode-button {selectMode ? 'selected' : ''}"
+                on:click={switchPhase}>Selection Mode</button
+            >
+            <button
+                class="mode-button comment-mode {!selectMode ? 'selected' : ''}"
+                on:click={switchPhase}>Comment Mode</button
+            >
+        </div>
         <button
-            class="mode-button {selectMode ? 'selected' : ''}"
-            on:click={switchPhase}>Selection Mode</button
-        >
-        <button
-            class="mode-button comment-mode {!selectMode ? 'selected' : ''}"
-            on:click={switchPhase}>Comment Mode</button
+            class="availability-button {otherVisibility ? 'selected' : ''}"
+            on:click={toggleOtherVisibility}>See Other's Availability</button
         >
     </div>
     <div class="center-text">
