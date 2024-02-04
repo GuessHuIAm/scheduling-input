@@ -83,6 +83,42 @@
                 event = info.event;
             }
 
+            /* COMMENT MERGING */
+            
+            selectionStart = new Date(event.start);
+            selectionEnd = new Date(event.end);
+            console.log(selectionStart, selectionEnd);
+
+            events.forEach((e) => {
+                if (
+                    e.id === event.id ||
+                    e.extendedProps.type != event.extendedProps.type ||
+                    e.title != event.title
+                ) {
+                    return;
+                }
+
+                const eStart = new Date(e.start);
+                const eEnd = new Date(e.end);
+
+                console.log(eStart, eEnd);
+
+                if (isTimeOverlap(eStart, eEnd, selectionStart, selectionEnd)) {
+                    console.log("Overlap between " + e.id + " and " + event.id);
+                    const newStart =
+                        eStart < selectionStart ? e.start : event.start;
+                    const newEnd = eEnd > selectionEnd ? e.end : event.end;
+
+                    calendar.removeEventById(e.id);
+                    event.start = newStart;
+                    event.end = newEnd;
+                }
+            });
+
+            /* COMMENT MERGING */ 
+
+
+
             calendar.updateEvent(event);
         }
     }
