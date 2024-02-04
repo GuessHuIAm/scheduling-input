@@ -17,26 +17,11 @@
         eventResize: (info) => handleEvent(info, false),
     };
 
-    let comment = "";
-
     function handleEvent(info, isNewEvent) {
         let event, selectionStart, selectionEnd;
         const events = calendar.getEvents();
 
         if (selectMode) {
-            events.forEach((e) => {
-                if (e.extendedProps.type === 'comment') {
-                    e.editable = false;
-                    e.startEditable = false;
-                    e.durationEditable = false;
-                } else if (e.extendedProps.type === 'event') {
-                    e.display = 'auto';
-                    e.editable = true;
-                }
-                calendar.updateEvent(e);
-            })
-
-
             if (isNewEvent) {
                 calendar.unselect();
                 event = makeEvent("event", info.startStr, info.endStr);
@@ -70,21 +55,7 @@
             });
 
             calendar.updateEvent(event);
-
-        } else if (!selectMode) { // will make this less naive later
-            events.forEach((e) => {
-                if (e.extendedProps.type === 'event') {
-                    //e.display = 'background';
-                    e.editable = false;
-                    e.startEditable = false;
-                    e.durationEditable = false;
-                } else if (e.extendedProps.type === 'comment') {
-                    e.display = 'auto';
-                    e.editable = true;
-                }
-                calendar.updateEvent(e);
-            })
-
+        } else if (!selectMode) {
             if (isNewEvent) {
                 calendar.unselect();
                 event = makeEvent("comment", info.startStr, info.endStr)
@@ -94,7 +65,6 @@
             }
             
             calendar.updateEvent(event);
-
         }
     }
 
@@ -117,25 +87,46 @@
             },
             editable: true,
             display: 'auto',
-            backgroundColor: type === 'event' ? 'skyblue' : 'pink',
+            backgroundColor: type === 'event' ? 'var(--color-event)' : 'var(--color-comment)',
         };
     }
 
-/* Play Area Containment */
-
     let selectMode = true;
-
     function switchPhase() {
         selectMode = !selectMode;
+        const events = calendar.getEvents();
+        if (selectMode)
+            events.forEach((e) => {
+                if (e.extendedProps.type === 'event') {
+                    e.display = 'auto';
+                    e.editable = true;
+                } else if (e.extendedProps.type === 'comment') {
+                    e.display = 'background';
+                    e.editable = false;
+                    e.startEditable = false;
+                    e.durationEditable = false;
+                }
+                calendar.updateEvent(e);
+            })
+        else
+            events.forEach((e) => {
+                if (e.extendedProps.type === 'event') {
+                    e.display = 'background';
+                    e.editable = false;
+                    e.startEditable = false;
+                    e.durationEditable = false;
+                } else if (e.extendedProps.type === 'comment') {
+                    e.display = 'auto';
+                    e.editable = true;
+                }
+                calendar.updateEvent(e);
+            })
     }
-
-    $: testText = selectMode ? 'in selection phase!' : 'in commenting phase!';
-
-
-/* Play Area [end] */
 
 </script>
 
-<button class="mode-button {selectMode ? 'selected' : ''}" on:click={switchPhase}>Selection Mode</button>
-<button class="mode-button {!selectMode ? 'selected' : ''}" on:click={switchPhase}>Comment Mode</button>
+<div class="mode-button-container">
+    <button class="mode-button {selectMode ? 'selected' : ''}" on:click={switchPhase}>Selection Mode</button>
+    <button class="mode-button comment-mode {!selectMode ? 'selected' : ''}" on:click={switchPhase}>Comment Mode</button>
+</div>
 <Calendar bind:this={calendar} {plugins} {options} />
