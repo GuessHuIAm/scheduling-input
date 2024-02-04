@@ -1,3 +1,28 @@
 :root {
     font: 16px/1.5 "Roboto", sans-serif;
+    --primary-color: #7992ee;
+}
+
+button {
+    cursor: pointer;
+    font: inherit;
+}
+
+.mode-button {
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    transition: all 0.3s;
+    color: var(--primary-color);
+}
+
+.mode-button:hover {
+    border: 1px solid var(--primary-color);
+}
+
+.mode-button.selected {
+    border: 1px solid var(--primary-color);
+    background-color: var(--primary-color);
+    color: white;
 }

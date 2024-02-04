@@ -23,11 +23,9 @@
         let event, selectionStart, selectionEnd;
         const events = calendar.getEvents();
 
-        if (selectPhase) {
-           
+        if (selectMode) {
             events.forEach((e) => {
                 if (e.extendedProps.type === 'comment') {
-                    //e.display = 'background';
                     e.editable = false;
                     e.startEditable = false;
                     e.durationEditable = false;
@@ -73,7 +71,7 @@
 
             calendar.updateEvent(event);
 
-        } else if (!selectPhase) { // will make this less naive later
+        } else if (!selectMode) { // will make this less naive later
             events.forEach((e) => {
                 if (e.extendedProps.type === 'event') {
                     //e.display = 'background';
@@ -119,27 +117,25 @@
             },
             editable: true,
             display: 'auto',
+            backgroundColor: type === 'event' ? 'skyblue' : 'pink',
         };
     }
 
 /* Play Area Containment */
 
-    let selectPhase = true;
-    let testText;
+    let selectMode = true;
 
     function switchPhase() {
-        selectPhase = !selectPhase;
-        console.log('I have switched!');
+        selectMode = !selectMode;
     }
-    console.log(selectPhase);
 
-    $: testText = selectPhase ? 'in selection phase!' : 'in commenting phase!';
+    $: testText = selectMode ? 'in selection phase!' : 'in commenting phase!';
 
 
 /* Play Area [end] */
 
 </script>
 
-<p> hey can we please be in {testText}</p>
-<button on:click={switchPhase}>Switch Phase</button>
+<button class="mode-button {selectMode ? 'selected' : ''}" on:click={switchPhase}>Selection Mode</button>
+<button class="mode-button {!selectMode ? 'selected' : ''}" on:click={switchPhase}>Comment Mode</button>
 <Calendar bind:this={calendar} {plugins} {options} />
