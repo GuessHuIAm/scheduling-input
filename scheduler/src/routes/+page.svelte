@@ -17,11 +17,21 @@
         eventResize: (info) => handleEvent(info, false),
     };
 
+    let defaultCommentOptions = [
+        "Preferable",
+        "Not Preferable",
+        "Other",
+    ]
+
+    let commentStart, commentEnd, previewEventId;
+    let commentText = defaultCommentOptions[0];
+    let popupVisible = false;
     function handleEvent(info, isNewEvent) {
         let event, selectionStart, selectionEnd;
         const events = calendar.getEvents();
 
         if (selectMode) {
+            // Selection mode
             if (isNewEvent) {
                 calendar.unselect();
                 event = makeEvent("event", info.startStr, info.endStr);
@@ -60,9 +70,14 @@
 
             calendar.updateEvent(event);
         } else if (!selectMode) {
+            // Comment mode
             if (isNewEvent) {
                 calendar.unselect();
-                event = makeEvent("comment", info.startStr, info.endStr);
+                popupVisible = true;
+                commentStart = info.startStr;
+                commentEnd = info.endStr;
+                event = makeEvent("preview", info.startStr, info.endStr);
+                previewEventId = event.id;
                 calendar.addEvent(event);
             } else {
                 event = info.event;
@@ -70,6 +85,24 @@
 
             calendar.updateEvent(event);
         }
+    }
+
+    function hidePopup() {
+        popupVisible = false;
+        calendar.removeEventById(previewEventId);
+    }
+
+    function addNewComment() {
+        const input = document.querySelector("#comment-other");
+        let newCommentText = (commentText == "Other" && input.value != "") ? input.value : commentText;
+        const event = makeEvent("comment", commentStart, commentEnd, newCommentText);
+        calendar.addEvent(event);
+        hidePopup();
+    }
+
+    function changeCommentOptions() {
+        const options = document.querySelector("#comment-options");
+        commentText = options.value;
     }
 
     function isTimeOverlap(start1, end1, start2, end2) {
@@ -81,7 +114,11 @@
         return String(Date.now());
     }
 
-    function makeEvent(type, start, end) {
+    function makeEvent(type, start, end, title = "") {
+        if (type === "comment" && title === "") {
+            throw new Error("Comment events must have a title.");
+        }
+
         return {
             id: createEventId(type),
             start: start,
@@ -90,7 +127,8 @@
                 type: type,
             },
             editable: true,
-            display: "auto",
+            display: type === "preview" ? "preview" : "auto",
+            title: title,
             backgroundColor:
                 type === "event"
                     ? "var(--color-event)"
@@ -144,7 +182,7 @@
 
 <div style="--color-preview: {colorPreview}">
     <div class="sticky-header">
-        <div class="mode-button-container">
+        <div class="mode-buttons-container">
             <button
                 class="mode-button {selectMode ? 'selected' : ''}"
                 on:click={switchPhase}>Selection Mode</button
@@ -162,5 +200,21 @@
     <div class="center-text">
         {selectionText}
     </div>
+    <div class="popup" style={popupVisible ? "" : "display: none;"}>
+        <div class="popup-content">
+            Add new comment for this time slot:
+            <select id="comment-options" on:change={changeCommentOptions}>
+                {#each defaultCommentOptions as option}
+                    <option value={option}>{option}</option>
+                {/each}
+            </select>
+            <input type="text" id="comment-other" style={commentText === "Other" ? "" : "display: none;"} />
+            <div class="popup-buttons-container">
+                <button class="popup-button" on:click={hidePopup}>Cancel</button>
+                <button class="popup-button" on:click={addNewComment}>Add</button>
+            </div>
+        </div>
+    </div>
+    <div class="popup-background" style={popupVisible ? "" : "display: none;"}></div>
     <Calendar bind:this={calendar} {plugins} {options} />
 </div>
