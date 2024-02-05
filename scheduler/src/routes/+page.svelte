@@ -4,14 +4,15 @@
     import Interaction from "@event-calendar/interaction";
     import "@event-calendar/core/index.css";
     import CalendarCheck from "svelte-icons/fa/FaCalendarCheck.svelte";
-    import { onMount } from 'svelte';
+    import { onMount } from "svelte";
 
     let calendar;
     let plugins = [TimeGrid, Interaction];
     let icons;
     onMount(() => {
         icons = {
-            'calendar-check': document.getElementById('calendar-check').innerHTML
+            "calendar-check":
+                document.getElementById("calendar-check").innerHTML,
         };
     });
     let options = {
@@ -23,52 +24,39 @@
         select: (info) => handleEvent(info, true),
         eventDrop: (info) => handleEvent(info, false),
         eventResize: (info) => handleEvent(info, false),
-
-        /* TOP
-        eventContent: (info) => { 
-        return {html: '<div class="cal-container"><div class="cal-header"><div>' 
-            + info.timeText + '</div><div>X</div></div><div class="cal-body">BODY</div></div>'}; 
-        }, 
-        
-        eventClick: (info) => { 
-        if ((info.jsEvent.layerX > info.el.offsetWidth - 20) && (info.jsEvent.layerY < 20)) { 
-            calendar.removeEventById(info.event.id); 
-            setTimeout(() => { calendar.saveCalendarEvents(); }, 1000); }},
-         */
-
         eventContent: (info) => {
             return info.event.display === "auto"
                 ? {
-                    html: `
+                      html: `
                     <div>${info.timeText}</div>
                     <div>${info.event.title}</div>
-                    <button class="delete-button">Delete</button>
-                    <div class="icon">
+                    <div class="icon" id="${info.event.id}">
                         ${
                             icons[info.event.extendedProps.icon_type]
-                            ? icons[info.event.extendedProps.icon_type]
-                            : ""
+                                ? icons[info.event.extendedProps.icon_type]
+                                : ""
                         }
                     `,
                   }
                 : "";
         },
 
+        eventDidMount: (info) => {
+            let icon = document.getElementById(info.event.id);
+            if (icon) {
+                let parent = icon.closest(".ec-event");
+                parent.appendChild(icon);
+            }
+        },
+
         eventClick: (info) => {
             if (info.event.display === "auto") {
-                let btn = info.el.querySelector("button");
-                if (info.jsEvent.target === btn) {
-                    calendar.removeEventById(info.event.id);
-                }
-                if (info.event.extendedProps.type === "comment") {
-                    //editComment(info.event);
-                }
+                populatePopupVariables(info.event);
             }
         },
     };
 
     let defaultCommentOptions = [
-        //make calendar icon the deafault for normal events?
         "Preferable", // thumbs up?
         "Not Preferable", // thumbs down? or something more nuetral?
         "Something Immediately Before", // using << icon?
@@ -76,14 +64,41 @@
         "Other", // unsure
     ];
 
-    let commentStart, commentEnd, previewEventId;
-    let commentText = defaultCommentOptions[0];
-    let popupVisible = false;
-    let editPopupVisible = false;
-    function handleEvent(info, isNewEvent) {
-        let event, selectionStart, selectionEnd;
-        const events = calendar.getEvents();
+    let popupEventStart, popupEventEnd, popupEventId;
+    let popupCommentOption = defaultCommentOptions[0],
+        popupComment = defaultCommentOptions[0];
+    // PopupCommentOption would be 'Other' if the user has a comment that is not in the defaultCommentOptions
+    let popupVisible = false,
+        editingComment = false,
+        editingEvent = false;
+    function populatePopupVariables(event, newEvent = false) {
+        popupVisible = true;
+        popupEventId = event.id;
+        popupEventStart = event.start;
+        popupEventEnd = event.end;
+        if (!newEvent) {
+            if (event.extendedProps.type === "comment") {
+                editingComment = true;
+                editingEvent = false;
+                popupComment = event.title;
+                popupCommentOption = defaultCommentOptions.includes(
+                    popupComment,
+                )
+                    ? popupComment
+                    : "Other";
+            } else {
+                editingComment = false;
+                editingEvent = true;
+            }
+        } else {
+            editingComment = false;
+            editingEvent = false;
+        }
+        changeCommentOptions();
+    }
 
+    function handleEvent(info, isNewEvent) {
+        let event;
         if (selectMode) {
             // Selection mode
             if (isNewEvent) {
@@ -97,17 +112,13 @@
             // Comment mode
             if (isNewEvent) {
                 calendar.unselect();
-                popupVisible = true;
-                commentStart = info.startStr;
-                commentEnd = info.endStr;
                 event = makeEvent("preview", info.startStr, info.endStr);
-                previewEventId = event.id;
+                populatePopupVariables(event, true);
                 calendar.addEvent(event);
             } else {
                 event = info.event;
             }
         }
-        addIcon(event);
         event = checkEventOverlap(event);
         calendar.updateEvent(event);
     }
@@ -141,59 +152,49 @@
 
     function hidePopup() {
         popupVisible = false;
-        calendar.removeEventById(previewEventId);
+        calendar.removeEventById(popupEventId);
     }
-
-    /*
-    function hideEditPopup() {
-        editPopupVisible = false;
-    }
-    */
-
-    function addIcon(event) {
-        return;
-        let icon = document.getElementById(event.id).querySelector('.icon');
-        let dateType = icon.getAttribute('data-type');
-        let iconComponent = icon.querySelector('#' + dateType);
-        if (iconComponent) {
-            icon.appendChild(iconComponent);
-        } else {
-            throw new Error('No icon component found for ' + dateType);
-        }
-    } 
 
     function addNewComment() {
         const input = document.querySelector("#comment-other");
-        let newCommentText =
-            commentText == "Other" && input.value != ""
+        let newpopupComment =
+            popupComment == "Other" && input.value != ""
                 ? input.value
-                : commentText;
+                : popupComment;
         let event = makeEvent(
             "comment",
-            commentStart,
-            commentEnd,
-            newCommentText,
+            popupEventStart,
+            popupEventEnd,
+            newpopupComment,
         );
         calendar.addEvent(event);
         event = checkEventOverlap(event);
         calendar.updateEvent(event);
         hidePopup();
     }
-    /*
-    function editComment(editEvent) {
-        console.log('the editcomment function actvivated');
-        editPopupVisible = true;
-        console.log('Is the popup visible?: ' + editPopupVisible);
+
+    function editComment() {
         const input = document.querySelector("#comment-other");
-        let newCommentText = (commentText == "Other" && input.value != "") ? input.value : commentText;
-        editEvent.title = newCommentText;
-        calendar.updateEvent(editEvent);
-        //hideEditPopup();
+        calendar.removeEventById(popupEventId);
+        let newpopupComment =
+            popupComment == "Other" && input.value != ""
+                ? input.value
+                : popupComment;
+        let event = makeEvent(
+            "comment",
+            popupEventStart,
+            popupEventEnd,
+            newpopupComment,
+        );
+        calendar.addEvent(event);
+        event = checkEventOverlap(event);
+        calendar.updateEvent(event);
+        hidePopup();
     }
-*/
+
     function changeCommentOptions() {
         const options = document.querySelector("#comment-options");
-        commentText = options.value;
+        popupComment = options.value;
     }
 
     function isTimeOverlap(start1, end1, start2, end2) {
@@ -294,45 +295,86 @@
     </div>
     <div class="popup" style={popupVisible ? "" : "display: none;"}>
         <div class="popup-content">
-            Add new comment for this time slot:
-            <select id="comment-options" on:change={changeCommentOptions}>
-                {#each defaultCommentOptions as option}
-                    <option value={option}>{option}</option>
-                {/each}
-            </select>
-            <input
-                type="text"
-                id="comment-other"
-                style={commentText === "Other" ? "" : "display: none;"}
-            />
-            <div class="popup-buttons-container">
-                <button class="popup-button" on:click={hidePopup}>Cancel</button
-                >
-                <button class="popup-button" on:click={addNewComment}
-                    >Add</button
-                >
-            </div>
+            {#if editingComment}
+                Edit comment for this time slot:
+                <select id="comment-options" on:change={changeCommentOptions}>
+                    {#each defaultCommentOptions as option}
+                        <option
+                            value={option}
+                            selected={option === popupCommentOption}
+                            >{option}</option
+                        >
+                    {/each}
+                </select>
+                <input
+                    type="text"
+                    id="comment-other"
+                    style={popupCommentOption === "Other"
+                        ? ""
+                        : "display: none;"}
+                />
+                <div class="popup-buttons-container">
+                    <button class="popup-button" on:click={hidePopup}
+                        >Cancel</button
+                    >
+                    <button
+                        class="popup-button delete-button"
+                        on:click={() => {
+                            calendar.removeEventById(popupEventId);
+                            hidePopup();
+                        }}>Remove Comment</button
+                    >
+                    <button class="popup-button" on:click={editComment}
+                        >Save</button
+                    >
+                </div>
+            {:else if editingEvent}
+                Remove this event?
+                <div class="popup-buttons-container">
+                    <button class="popup-button" on:click={hidePopup}
+                        >Cancel</button
+                    >
+                    <button
+                        class="popup-button delete-button"
+                        on:click={() => {
+                            calendar.removeEventById(popupEventId);
+                            hidePopup();
+                        }}>Remove</button
+                    >
+                </div>
+            {:else}
+                Add new comment for this time slot:
+                <select id="comment-options" on:change={changeCommentOptions}>
+                    {#each defaultCommentOptions as option}
+                        <option
+                            value={option}
+                            selected={option === popupCommentOption}
+                            >{option}</option
+                        >
+                    {/each}
+                </select>
+                <input
+                    type="text"
+                    id="comment-other"
+                    style={popupCommentOption === "Other"
+                        ? ""
+                        : "display: none;"}
+                />
+                <div class="popup-buttons-container">
+                    <button class="popup-button" on:click={hidePopup}
+                        >Cancel</button
+                    >
+                    <button class="popup-button" on:click={addNewComment}
+                        >Add</button
+                    >
+                </div>
+            {/if}
         </div>
     </div>
-    <!--<div class="popup" style={editPopupVisible ? "" : "display: none;"}>
-        <div class="popup-content">
-            Edit your comment for this time slot:
-            <select id="comment-options" on:change={changeCommentOptions}>
-                {#each defaultCommentOptions as option}
-                    <option value={option}>{option}</option>
-                {/each}
-            </select>
-            <input type="text" id="comment-other" style={commentText === "Other" ? "" : "display: none;"} />
-            <div class="popup-buttons-container">
-                <button class="popup-button" on:click={hideEditPopup}>Cancel</button>
-                <button class="popup-button" on:click={hideEditPopup}>Edit</button>
-            </div>
-        </div>
-    </div> -->
     <div
         class="popup-background"
         style={popupVisible ? "" : "display: none;"}
     ></div>
     <Calendar bind:this={calendar} {plugins} {options} />
-    <div id='calendar-check' hidden><CalendarCheck /></div>
+    <div id="calendar-check" hidden><CalendarCheck /></div>
 </div>
