@@ -4,6 +4,7 @@
     import Interaction from "@event-calendar/interaction";
     import "@event-calendar/core/index.css";
     import CalendarCheck from "svelte-icons/fa/FaCalendarCheck.svelte";
+    import { onMount } from 'svelte';
 
     let calendar;
     let plugins = [TimeGrid, Interaction];
@@ -18,7 +19,6 @@
         eventResize: (info) => handleEvent(info, false),
 
         /* TOP
-
         eventContent: (info) => { 
         return {html: '<div class="cal-container"><div class="cal-header"><div>' 
             + info.timeText + '</div><div>X</div></div><div class="cal-body">BODY</div></div>'}; 
@@ -28,21 +28,17 @@
         if ((info.jsEvent.layerX > info.el.offsetWidth - 20) && (info.jsEvent.layerY < 20)) { 
             calendar.removeEventById(info.event.id); 
             setTimeout(() => { calendar.saveCalendarEvents(); }, 1000); }},
-        
          */
 
         eventContent: (info) => {
             return info.event.display === "auto"
                 ? {
-                      html:
-                          "<div>" +
-                          info.timeText +
-                          "</div>" +
-                          '<button id="delete-button"> Delete </button>' +
-                          // '<div class="icon"> <CalendarCheck /> </div>' + //doesn't show up here, try something else?
-                          "<div>" +
-                          info.event.title +
-                          "</div>",
+                    html: `
+                    <div>${info.timeText}</div>
+                    <div>${info.event.title}</div>
+                    <button class="delete-button">Delete</button>
+                    <div class="icon" date-types="calendar-check"></div>
+                    `,
                   }
                 : "";
         },
@@ -100,6 +96,7 @@
                 event = info.event;
             }
         }
+        addIcon(event);
         event = checkEventOverlap(event);
         calendar.updateEvent(event);
     }
@@ -141,6 +138,18 @@
         editPopupVisible = false;
     }
     */
+
+    function addIcon(event) {
+        return;
+        let icon = document.getElementById(event.id).querySelector('.icon');
+        let dateType = icon.getAttribute('date-types');
+        let iconComponent = icon.querySelector('#' + dateType);
+        if (iconComponent) {
+            icon.appendChild(iconComponent);
+        } else {
+            throw new Error('No icon component found for ' + dateType);
+        }
+    } 
 
     function addNewComment() {
         const input = document.querySelector("#comment-other");
@@ -313,4 +322,5 @@
         style={popupVisible ? "" : "display: none;"}
     ></div>
     <Calendar bind:this={calendar} {plugins} {options} />
+    <div id='calendar-check' hidden><CalendarCheck /></div>
 </div>

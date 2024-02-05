@@ -157,15 +157,21 @@ button {
     margin-top: 0;
 }
 
-#delete-button {
+.ec-event-body:hover .delete-button {
+    display: block;
+}
+
+.delete-button {
+    display: none;
     background-color: transparent;
     border-radius: 15px;
     border: 1px solid white;
     color: white;
     width: 75%;
+    margin: auto;
 }
 
-#delete-button:hover {
+.delete-button:hover {
     background-color: rgb(255,255,255,0.1);
     border-radius: 15px;
     transition: background-color 0.2s;
