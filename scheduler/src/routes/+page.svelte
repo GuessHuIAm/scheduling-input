@@ -3,7 +3,7 @@
     import TimeGrid from "@event-calendar/time-grid";
     import Interaction from "@event-calendar/interaction";
     import "@event-calendar/core/index.css";
-    import CalendarCheck from 'svelte-icons/fa/FaCalendarCheck.svelte';
+    import CalendarCheck from "svelte-icons/fa/FaCalendarCheck.svelte";
 
     let calendar;
     let plugins = [TimeGrid, Interaction];
@@ -32,38 +32,42 @@
          */
 
         eventContent: (info) => {
-          return info.event.display === 'auto'
-            ? {html: '<div>' + info.timeText + '</div>' +
-              '<button id="delete-button"> Delete </button>' +
-              // '<div class="icon"> <CalendarCheck /> </div>' + //doesn't show up here, try something else?
-              '<div>' + info.event.title + '</div>'}
-            : '';
+            return info.event.display === "auto"
+                ? {
+                      html:
+                          "<div>" +
+                          info.timeText +
+                          "</div>" +
+                          '<button id="delete-button"> Delete </button>' +
+                          // '<div class="icon"> <CalendarCheck /> </div>' + //doesn't show up here, try something else?
+                          "<div>" +
+                          info.event.title +
+                          "</div>",
+                  }
+                : "";
         },
-  
+
         eventClick: (info) => {
-          if (info.event.display === 'auto') {
-            let btn = info.el.querySelector('button');
-            if (info.jsEvent.target === btn) {
-              calendar.removeEventById(info.event.id);
+            if (info.event.display === "auto") {
+                let btn = info.el.querySelector("button");
+                if (info.jsEvent.target === btn) {
+                    calendar.removeEventById(info.event.id);
+                }
+                if (info.event.extendedProps.type === "comment") {
+                    //editComment(info.event);
+                }
             }
-            if (info.event.extendedProps.type === 'comment') {
-                //editComment(info.event);
-            }
-          }
         },
-
-
-
-
     };
 
-    let defaultCommentOptions = [ //make calendar icon the deafault for normal events?
+    let defaultCommentOptions = [
+        //make calendar icon the deafault for normal events?
         "Preferable", // thumbs up?
         "Not Preferable", // thumbs down? or something more nuetral?
         "Something Immediately Before", // using << icon?
         "Something Immediately After", // using >> icon?
         "Other", // unsure
-    ]
+    ];
 
     let commentStart, commentEnd, previewEventId;
     let commentText = defaultCommentOptions[0];
@@ -82,36 +86,6 @@
             } else {
                 event = info.event;
             }
-            selectionStart = new Date(event.start);
-            selectionEnd = new Date(event.end);
-            console.log(selectionStart, selectionEnd);
-
-            events.forEach((e) => {
-                if (
-                    e.id === event.id ||
-                    e.extendedProps.type != event.extendedProps.type
-                ) {
-                    return;
-                }
-
-                const eStart = new Date(e.start);
-                const eEnd = new Date(e.end);
-
-                console.log(eStart, eEnd);
-
-                if (isTimeOverlap(eStart, eEnd, selectionStart, selectionEnd)) {
-                    console.log("Overlap between " + e.id + " and " + event.id);
-                    const newStart =
-                        eStart < selectionStart ? e.start : event.start;
-                    const newEnd = eEnd > selectionEnd ? e.end : event.end;
-
-                    calendar.removeEventById(e.id);
-                    event.start = newStart;
-                    event.end = newEnd;
-                }
-            });
-
-            calendar.updateEvent(event);
         } else if (!selectMode) {
             // Comment mode
             if (isNewEvent) {
@@ -125,43 +99,36 @@
             } else {
                 event = info.event;
             }
-
-            /* COMMENT MERGING */
-            
-            selectionStart = new Date(event.start);
-            selectionEnd = new Date(event.end);
-            console.log(selectionStart, selectionEnd);
-
-            events.forEach((e) => {
-                if (
-                    e.id === event.id ||
-                    e.extendedProps.type != event.extendedProps.type ||
-                    e.title != event.title
-                ) {
-                    return;
-                }
-
-                const eStart = new Date(e.start);
-                const eEnd = new Date(e.end);
-
-                console.log(eStart, eEnd);
-
-                if (isTimeOverlap(eStart, eEnd, selectionStart, selectionEnd)) {
-                    console.log("Overlap between " + e.id + " and " + event.id);
-                    const newStart =
-                        eStart < selectionStart ? e.start : event.start;
-                    const newEnd = eEnd > selectionEnd ? e.end : event.end;
-
-                    calendar.removeEventById(e.id);
-                    event.start = newStart;
-                    event.end = newEnd;
-                }
-            });
-
-            /* COMMENT MERGING */ 
-
-            calendar.updateEvent(event);
         }
+        event = checkEventOverlap(event);
+        calendar.updateEvent(event);
+    }
+
+    function checkEventOverlap(event) {
+        const events = calendar.getEvents();
+        const start = new Date(event.start);
+        const end = new Date(event.end);
+        events.forEach((e) => {
+            if (
+                e.id === event.id ||
+                e.extendedProps.type != event.extendedProps.type ||
+                e.title != event.title
+            ) {
+                return event;
+            }
+            const eStart = new Date(e.start);
+            const eEnd = new Date(e.end);
+            if (isTimeOverlap(eStart, eEnd, start, end)) {
+                console.log("Overlap between " + e.id + " and " + event.id);
+                const newStart = eStart < start ? e.start : event.start;
+                const newEnd = eEnd > end ? e.end : event.end;
+
+                calendar.removeEventById(e.id);
+                event.start = newStart;
+                event.end = newEnd;
+            }
+        });
+        return event;
     }
 
     function hidePopup() {
@@ -177,12 +144,22 @@
 
     function addNewComment() {
         const input = document.querySelector("#comment-other");
-        let newCommentText = (commentText == "Other" && input.value != "") ? input.value : commentText;
-        const event = makeEvent("comment", commentStart, commentEnd, newCommentText);
+        let newCommentText =
+            commentText == "Other" && input.value != ""
+                ? input.value
+                : commentText;
+        let event = makeEvent(
+            "comment",
+            commentStart,
+            commentEnd,
+            newCommentText,
+        );
         calendar.addEvent(event);
+        event = checkEventOverlap(event);
+        calendar.updateEvent(event);
         hidePopup();
     }
-/*
+    /*
     function editComment(editEvent) {
         console.log('the editcomment function actvivated');
         editPopupVisible = true;
@@ -272,8 +249,6 @@
     function toggleOtherVisibility() {
         otherVisibility = !otherVisibility;
     }
-
-
 </script>
 
 <div style="--color-preview: {colorPreview}">
@@ -304,10 +279,17 @@
                     <option value={option}>{option}</option>
                 {/each}
             </select>
-            <input type="text" id="comment-other" style={commentText === "Other" ? "" : "display: none;"} />
+            <input
+                type="text"
+                id="comment-other"
+                style={commentText === "Other" ? "" : "display: none;"}
+            />
             <div class="popup-buttons-container">
-                <button class="popup-button" on:click={hidePopup}>Cancel</button>
-                <button class="popup-button" on:click={addNewComment}>Add</button>
+                <button class="popup-button" on:click={hidePopup}>Cancel</button
+                >
+                <button class="popup-button" on:click={addNewComment}
+                    >Add</button
+                >
             </div>
         </div>
     </div>
@@ -326,7 +308,9 @@
             </div>
         </div>
     </div> -->
-    <div class="popup-background" style={(popupVisible && editPopupVisible) ? "" : "display: none;"}></div>
+    <div
+        class="popup-background"
+        style={popupVisible ? "" : "display: none;"}
+    ></div>
     <Calendar bind:this={calendar} {plugins} {options} />
 </div>
-
