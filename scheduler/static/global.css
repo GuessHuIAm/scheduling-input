@@ -156,3 +156,26 @@ button {
 #comment-other {
     margin-top: 0;
 }
+
+#delete-button {
+    background-color: transparent;
+    border-radius: 15px;
+    border: 1px solid white;
+    color: white;
+    width: 75%;
+}
+
+#delete-button:hover {
+    background-color: rgb(255,255,255,0.1);
+    border-radius: 15px;
+    transition: background-color 0.2s;
+    border: 1px solid white;
+    color: white;
+}
+
+.icon {
+    color: white;
+    width: 32px;
+    height: 32px;
+    display: inline-block;
+}
