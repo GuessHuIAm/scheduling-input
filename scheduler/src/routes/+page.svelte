@@ -8,6 +8,12 @@
 
     let calendar;
     let plugins = [TimeGrid, Interaction];
+    let icons;
+    onMount(() => {
+        icons = {
+            'calendar-check': document.getElementById('calendar-check').innerHTML
+        };
+    });
     let options = {
         view: "timeGridWeek",
         initialView: "timeGridWeek",
@@ -37,7 +43,12 @@
                     <div>${info.timeText}</div>
                     <div>${info.event.title}</div>
                     <button class="delete-button">Delete</button>
-                    <div class="icon" date-types="calendar-check"></div>
+                    <div class="icon">
+                        ${
+                            icons[info.event.extendedProps.icon_type]
+                            ? icons[info.event.extendedProps.icon_type]
+                            : ""
+                        }
                     `,
                   }
                 : "";
@@ -142,7 +153,7 @@
     function addIcon(event) {
         return;
         let icon = document.getElementById(event.id).querySelector('.icon');
-        let dateType = icon.getAttribute('date-types');
+        let dateType = icon.getAttribute('data-type');
         let iconComponent = icon.querySelector('#' + dateType);
         if (iconComponent) {
             icon.appendChild(iconComponent);
@@ -205,6 +216,7 @@
             end: end,
             extendedProps: {
                 type: type,
+                icon_type: type === "comment" ? "calendar-check" : "",
             },
             editable: true,
             display: type === "preview" ? "preview" : "auto",

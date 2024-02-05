@@ -181,7 +181,9 @@ button {
 
 .icon {
     color: white;
-    width: 32px;
-    height: 32px;
-    display: inline-block;
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    top: 0.1rem;
+    right: 0.1rem;
 }
