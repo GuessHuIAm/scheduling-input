@@ -3,7 +3,11 @@
     import TimeGrid from "@event-calendar/time-grid";
     import Interaction from "@event-calendar/interaction";
     import "@event-calendar/core/index.css";
-    import CalendarCheck from "svelte-icons/fa/FaCalendarCheck.svelte";
+    import Comment from "svelte-icons/fa/FaComment.svelte";
+    import AngleDoubleLeft from "svelte-icons/fa/FaAngleDoubleLeft.svelte";
+    import AngleDoubleRight from "svelte-icons/fa/FaAngleDoubleRight.svelte";
+    import ThumbsUp from "svelte-icons/fa/FaThumbsUp.svelte";
+    import ThumbsDown from "svelte-icons/fa/FaThumbsDown.svelte";
     import { onMount } from "svelte";
 
     let calendar;
@@ -11,8 +15,16 @@
     let icons;
     onMount(() => {
         icons = {
-            "calendar-check":
-                document.getElementById("calendar-check").innerHTML,
+            "thumbs-up":
+                document.getElementById("thumbs-up").innerHTML,
+            "thumbs-down":
+                document.getElementById("thumbs-down").innerHTML,
+            "angle-double-left":
+                document.getElementById("angle-double-left").innerHTML,
+            "angle-double-right":
+                document.getElementById("angle-double-right").innerHTML,
+            "comment":
+                document.getElementById("comment").innerHTML,
         };
     });
     let options = {
@@ -217,7 +229,11 @@
             end: end,
             extendedProps: {
                 type: type,
-                icon_type: type === "comment" ? "calendar-check" : "",
+                icon_type: title === defaultCommentOptions[0] ? "thumbs-up" : //Preferable
+                           title === defaultCommentOptions[1] ? "thumbs-down": //Not Preferable
+                           title === defaultCommentOptions[2] ? "angle-double-left": //Something Immediately Before
+                           title === defaultCommentOptions[3] ? "angle-double-right": //Something Immediately After
+                           title !== "" ? "comment": "", //Other
             },
             editable: true,
             display: type === "preview" ? "preview" : "auto",
@@ -376,5 +392,10 @@
         style={popupVisible ? "" : "display: none;"}
     ></div>
     <Calendar bind:this={calendar} {plugins} {options} />
-    <div id="calendar-check" hidden><CalendarCheck /></div>
+    <div id="thumbs-up" hidden><ThumbsUp /></div>
+    <div id="thumbs-down" hidden><ThumbsDown /></div>
+    <div id="angle-double-left" hidden><AngleDoubleLeft /></div>
+    <div id="angle-double-right" hidden><AngleDoubleRight /></div>
+    <div id="comment" hidden><Comment /></div>
+    
 </div>
