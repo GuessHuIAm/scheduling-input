@@ -80,6 +80,25 @@ button {
     color: white;
 }
 
+.submit-button {
+    background-color: transparent;
+    border: 1px dashed var(--color-event-variant);
+    border-radius: 15px;
+    transition: all 0.3s;
+    padding: 0.3rem 1rem;
+    color: var(--color-event-variant);
+}
+
+.submit-button:hover {
+    border: 1px dashed var(--color-event-variant);
+}
+
+.submit-button.selected {
+    border: 1px solid var(--color-event-variant);
+    background-color: var(--color-event-variant);
+    color: white;
+}
+
 .sticky-header {
     position: sticky;
     top: 0;

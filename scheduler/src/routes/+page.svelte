@@ -284,8 +284,13 @@
         : "var(--color-comment)";
 
     let otherVisibility = false;
+    let submit = false;
     function toggleOtherVisibility() {
         otherVisibility = !otherVisibility;
+    }
+    function submitAvailability() { //figure treating submitting as a one type switch would be fine?
+                                    //feel free to change to a toggle if unsubmitting feels better
+        submit = true;
     }
 </script>
 
@@ -304,6 +309,10 @@
         <button
             class="availability-button {otherVisibility ? 'selected' : ''}"
             on:click={toggleOtherVisibility}>See Other's Availability</button
+        >
+        <button 
+            class="submit-button {submit ? 'selected' : ''}" 
+            on:click={submitAvailability}>Submit</button
         >
     </div>
     <div class="center-text">
