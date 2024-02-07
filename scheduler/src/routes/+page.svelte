@@ -15,20 +15,15 @@
     let icons;
     onMount(() => {
         icons = {
-            "thumbs-up":
-                document.getElementById("thumbs-up").innerHTML,
-            "thumbs-down":
-                document.getElementById("thumbs-down").innerHTML,
+            "thumbs-up": document.getElementById("thumbs-up").innerHTML,
+            "thumbs-down": document.getElementById("thumbs-down").innerHTML,
             "angle-double-left":
                 document.getElementById("angle-double-left").innerHTML,
             "angle-double-right":
                 document.getElementById("angle-double-right").innerHTML,
-            "comment":
-                document.getElementById("comment").innerHTML,
+            comment: document.getElementById("comment").innerHTML,
         };
     });
-
-    
 
     let options = {
         view: "timeGridWeek",
@@ -44,27 +39,58 @@
         eventDrop: (info) => handleEvent(info, false),
         eventResize: (info) => handleEvent(info, false),
         eventContent: (info) => {
-            return info.event.display === "auto"
-                ? {
-                      html: `
-                    <div>${info.timeText}</div>
-                    <div>${info.event.title}</div>
+            let content = {
+                html: "",
+            };
+            let eventType = info.event.extendedProps.type;
+            let iconType = info.event.extendedProps.icon_type;
+            if (info.event.display === "auto") {
+                content = {
+                    html: `
+                    <div>${eventType === "comment" ? "" : info.timeText}</div>
+                    <div class="title" title="${info.event.title}">${
+                        info.event.title
+                    }</div>
                     <div class="icon" id="${info.event.id}">
-                        ${
-                            icons[info.event.extendedProps.icon_type]
-                                ? icons[info.event.extendedProps.icon_type]
-                                : ""
-                        }
+                        ${icons[iconType] ? icons[iconType] : ""}
+                    </div>
                     `,
-                  }
-                : "";
+                };
+            } else if (info.event.display === "background") {
+                if (eventType === "icon") {
+                    content = {
+                        html: `
+                        <div class="icon" id="${info.event.id}">
+                            ${icons[iconType] ? icons[iconType] : ""}
+                        </div>
+                        `,
+                    };
+                } else {
+                    content = {
+                        html: `
+                    <div class='title'>${info.event.title}</div>
+                    <div class="icon" id="${info.event.id}">
+                    </div>
+                    `,
+                    };
+                }
+            }
+            return content;
         },
 
         eventDidMount: (info) => {
             let icon = document.getElementById(info.event.id);
-            if (icon) {
-                let parent = icon.closest(".ec-event");
-                parent.appendChild(icon);
+            let eventType = info.event.extendedProps.type;
+
+            if (eventType === "comment-other") {
+                let parent = icon.closest(".ec-bg-event");
+                parent.classList.add("comment-stripe");
+            } else if (eventType === "event-other") {
+                let parent = icon.closest(".ec-bg-event");
+                parent.classList.add("event-stripe");
+            } else if (eventType === "icon") {
+                let parent = icon.closest(".ec-bg-event");
+                parent.classList.add("icon-event");
             }
         },
 
@@ -81,76 +107,7 @@
             currentStart: "2024-02-07",
             currentEnd: "2024-02-12",
         },
-
-        events: [] 
     };
-
-    let otherEvents = [
-            {
-                "id": "1",
-                "start": "2024-02-07T08:00:00",
-                "end": "2024-02-07T13:00:00",
-                "display": "background",
-                "backgroundColor": "var(--color-event-others)",
-                "extendedProps": {
-                    "type": "event-other",
-                }
-            }, 
-            {
-                "id": "2",
-                "start": "2024-02-07T10:00:00",
-                "end": "2024-02-07T11:00:00",
-                "display": "background",
-                "backgroundColor": "var(--color-event-others)",
-                "extendedProps": {
-                    "type": "event-other",
-                }
-            },
-            {
-                "id": "3",
-                "start": "2024-02-08T13:00:00",
-                "end": "2024-02-08T15:00:00",
-                "display": "background",
-                "backgroundColor": "var(--color-comment-others)",
-                "title": "Not Preferable",
-                "extendedProps": {
-                    "type": "comment-other",
-                }
-            },
-            {
-                "id": "4",
-                "start": "2024-02-08T17:00:00",
-                "end": "2024-02-08T18:00:00",
-                "display": "background",
-                "backgroundColor": "var(--color-comment-others)",
-                "title": "Preferable",
-                "extendedProps": {
-                    "type": "comment-other",
-                }
-            },
-            {
-                "id": "5",
-                "start": "2024-02-09T13:00:00",
-                "end": "2024-02-09T15:00:00",
-                "display": "background",
-                "backgroundColor": "var(--color-comment-others)",
-                "title": "Something Immediately Before",
-                "extendedProps": {
-                    "type": "comment-other",
-                }
-            },
-            {
-                "id": "6",
-                "start": "2024-02-10T13:00:00",
-                "end": "2024-02-10T15:00:00",
-                "display": "background",
-                "backgroundColor": "var(--color-comment-others)",
-                "title": "Something Immediately After",
-                "extendedProps": {
-                    "type": "comment-other",
-                }
-            }
-        ];
 
     let defaultCommentOptions = [
         "Preferable", // thumbs up
@@ -159,6 +116,47 @@
         "Something Immediately After", // >> icon
         "Other", // comment bubble
     ];
+
+    let otherEvents = [
+        makeEvent("event-other", "2024-02-07T08:00:00", "2024-02-07T13:00:00"),
+        makeEvent("event-other", "2024-02-07T10:00:00", "2024-02-07T11:00:00"),
+        makeEvent(
+            "comment-other",
+            "2024-02-07T9:30:00",
+            "2024-02-07T11:00:00",
+            "Not Preferable",
+        ),
+        makeEvent(
+            "comment-other",
+            "2024-02-08T17:00:00",
+            "2024-02-08T18:00:00",
+            "Preferable",
+        ),
+        makeEvent("event-other", "2024-02-09T13:00:00", "2024-02-09T15:00:00"),
+        makeEvent("event-other", "2024-02-10T13:00:00", "2024-02-10T15:00:00"),
+        makeEvent(
+            "comment-other",
+            "2024-02-09T14:00:00",
+            "2024-02-09T15:00:00",
+            "Something Immediately Before",
+        ),
+        makeEvent(
+            "comment-other",
+            "2024-02-10T13:00:00",
+            "2024-02-10T14:00:00",
+            "Something Immediately After",
+        ),
+        makeEvent(
+            "icon",
+            "2024-02-10T13:00:00",
+            "2024-02-10T14:00:00",
+            "Something Immediately After",
+        ),
+    ];
+
+    let commentStartsToList = {};
+    let commentStartsToId = {};
+    let IdToCommentStarts = {};
 
     let popupEventStart, popupEventEnd, popupEventId;
     let popupCommentOption = defaultCommentOptions[0],
@@ -216,7 +214,21 @@
             }
         }
         event = checkEventOverlap(event);
+        addToCommentStarts(event);
         calendar.updateEvent(event);
+    }
+
+    function addToCommentStarts(event) {
+        if (event.extendedProps.type === "comment" || event.extendedProps.type === "preview") {
+            let start = new Date(event.start);
+            if (commentStartsToList[start] === undefined) {
+                commentStartsToList[start] = [event.title];
+                // Make an icon event for the start time + 30 minutes
+                // let iconEvent = makeEvent("icon", start, new Date(start.getTime() + 30 * 60000));
+            } else {
+                // commentStartsToList[start].push(event.title);
+            }
+        }
     }
 
     function checkEventOverlap(event) {
@@ -237,8 +249,7 @@
                 console.log("Overlap between " + e.id + " and " + event.id);
                 const newStart = eStart < start ? e.start : event.start;
                 const newEnd = eEnd > end ? e.end : event.end;
-
-                calendar.removeEventById(e.id);
+                removeEvent(e.id);
                 event.start = newStart;
                 event.end = newEnd;
             }
@@ -248,7 +259,14 @@
 
     function hidePopup() {
         popupVisible = false;
-        calendar.removeEventById(popupEventId);
+    }
+
+    function removeEvent(id) {
+        calendar.removeEventById(id);
+        let element = document.getElementById(id);
+        if (element) {
+            element.remove();
+        }
     }
 
     function addNewComment() {
@@ -267,11 +285,12 @@
         event = checkEventOverlap(event);
         calendar.updateEvent(event);
         hidePopup();
+        removeEvent(popupEventId);
     }
 
     function editComment() {
         const input = document.querySelector("#comment-other");
-        calendar.removeEventById(popupEventId);
+        removeEvent(popupEventId);
         let newpopupComment =
             popupComment == "Other" && input.value != ""
                 ? input.value
@@ -299,7 +318,28 @@
     }
 
     function createEventId(type) {
-        return String(Date.now());
+        var d = new Date().getTime(); //Timestamp
+        var d2 =
+            (typeof performance !== "undefined" &&
+                performance.now &&
+                performance.now() * 1000) ||
+            0; //Time in microseconds since page-load or 0 if unsupported
+        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+            /[xy]/g,
+            function (c) {
+                var r = Math.random() * 16; //random number between 0 and 16
+                if (d > 0) {
+                    //Use timestamp until depleted
+                    r = (d + r) % 16 | 0;
+                    d = Math.floor(d / 16);
+                } else {
+                    //Use microseconds since page-load if supported
+                    r = (d2 + r) % 16 | 0;
+                    d2 = Math.floor(d2 / 16);
+                }
+                return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
+            },
+        );
     }
 
     function makeEvent(type, start, end, title = "") {
@@ -313,30 +353,41 @@
             end: end,
             extendedProps: {
                 type: type,
-                icon_type: title === defaultCommentOptions[0] ? "thumbs-up" : //Preferable
-                           title === defaultCommentOptions[1] ? "thumbs-down": //Not Preferable
-                           title === defaultCommentOptions[2] ? "angle-double-left": //Something Immediately Before
-                           title === defaultCommentOptions[3] ? "angle-double-right": //Something Immediately After
-                           title !== "" ? "comment": "", //Other
+                icon_type:
+                    title === defaultCommentOptions[0]
+                        ? "thumbs-up" //Preferable
+                        : title === defaultCommentOptions[1]
+                          ? "thumbs-down" // Not Preferable
+                          : title === defaultCommentOptions[2]
+                            ? "angle-double-left" // Something Immediately Before
+                            : title === defaultCommentOptions[3]
+                              ? "angle-double-right" // Something Immediately After
+                              : title !== ""
+                                ? "comment"
+                                : "", //Other
             },
             editable: true,
-            display: type === "preview" ? "preview" : "auto",
+            display:
+                type === "preview"
+                    ? "preview"
+                    : type === "event-other" ||
+                        type === "comment-other" ||
+                        type === "icon"
+                      ? "background"
+                      : "auto",
             title: title,
             backgroundColor:
                 type === "event"
                     ? "var(--color-event)"
-                    : "var(--color-comment)",
-        };
-    }
-
-    function makeEventObject(type, start, end, title) {
-        return {
-            "id": createEventId(type),
-            "start": start,
-            "end": end,
-            "display": type === "other" ? "background" : "auto",
-            "title": title,
-            "backgroundColor": type === "event" ? "green" : "blue",
+                    : type === "comment"
+                      ? "var(--color-comment)"
+                      : type === "event-other"
+                        ? "var(--color-event-others)"
+                        : type === "comment-other"
+                          ? "var(--color-comment-others)"
+                          : type === "icon"
+                            ? "var(--color-icon-event)"
+                            : "var(--color-preview)",
         };
     }
 
@@ -347,7 +398,7 @@
     function switchPhase() {
         selectMode = !selectMode;
         const events = calendar.getEvents();
-        if (selectMode)
+        if (selectMode) {
             events.forEach((e) => {
                 if (e.extendedProps.type === "event") {
                     e.display = "auto";
@@ -360,19 +411,19 @@
                 }
                 calendar.updateEvent(e);
             });
-        else
+        } else {
             events.forEach((e) => {
                 if (e.extendedProps.type === "event") {
                     e.display = "background";
                     e.editable = false;
                     e.startEditable = false;
-                    e.durationEditable = false;
                 } else if (e.extendedProps.type === "comment") {
                     e.display = "auto";
                     e.editable = true;
                 }
                 calendar.updateEvent(e);
             });
+        }
     }
 
     $: colorPreview = selectMode
@@ -381,10 +432,9 @@
 
     let otherVisibility = false;
     let submit = false;
-    
+
     function toggleOtherVisibility() {
         otherVisibility = !otherVisibility;
-        console.log("this toggle function has activated!");
         let eventList = calendar.getEvents();
         let newEventsReal;
         if (otherVisibility) {
@@ -392,15 +442,17 @@
             calendar.setOption("events", newEventsReal);
         } else if (!otherVisibility) {
             eventList.forEach((e) => {
-                if (e.extendedProps.type === "event-other" || e.extendedProps.type === "comment-other") {
-                    calendar.removeEventById(e.id);
+                if (
+                    e.extendedProps.type === "event-other" ||
+                    e.extendedProps.type === "comment-other"
+                ) {
+                    removeEvent(e.id);
                 }
             });
         }
-        
     }
 
-    function submitAvailability() { 
+    function submitAvailability() {
         submit = !submit;
     }
 </script>
@@ -417,14 +469,18 @@
                 on:click={switchPhase}>Comment Mode</button
             >
         </div>
-        <button
-            class="availability-button {otherVisibility ? 'selected' : ''}"
-            on:click={toggleOtherVisibility}>See Other's Availability</button
-        >
-        <button 
-            class="submit-button {submit ? 'selected' : ''}" 
-            on:click={submitAvailability}>Submit</button
-        >
+        <div class="mode-buttons-container">
+            <button
+                class="availability-button {otherVisibility ? 'selected' : ''}"
+                on:click={toggleOtherVisibility}
+                >See Other's Availability</button
+            >
+            <button
+                class="submit-button {submit ? 'selected' : ''}"
+                on:click={submitAvailability}
+                >{submit ? "Submitted" : "Submit"}</button
+            >
+        </div>
     </div>
     <div class="center-text">
         {selectionText}
@@ -456,7 +512,7 @@
                     <button
                         class="popup-button delete-button"
                         on:click={() => {
-                            calendar.removeEventById(popupEventId);
+                            removeEvent(popupEventId);
                             hidePopup();
                         }}>Remove Comment</button
                     >
@@ -473,7 +529,7 @@
                     <button
                         class="popup-button delete-button"
                         on:click={() => {
-                            calendar.removeEventById(popupEventId);
+                            removeEvent(popupEventId);
                             hidePopup();
                         }}>Remove</button
                     >
@@ -497,8 +553,12 @@
                         : "display: none;"}
                 />
                 <div class="popup-buttons-container">
-                    <button class="popup-button" on:click={hidePopup}
-                        >Cancel</button
+                    <button
+                        class="popup-button"
+                        on:click={() => {
+                            hidePopup();
+                            removeEvent(popupEventId);
+                        }}>Cancel</button
                     >
                     <button class="popup-button" on:click={addNewComment}
                         >Add</button
@@ -517,5 +577,4 @@
     <div id="angle-double-left" hidden><AngleDoubleLeft /></div>
     <div id="angle-double-right" hidden><AngleDoubleRight /></div>
     <div id="comment" hidden><Comment /></div>
-    
 </div>
