@@ -384,7 +384,7 @@
                                 ? "comment"
                                 : "", //Other
             },
-            editable: true,
+            editable: type === "icon" ? false : true,
             display:
                 type === "preview"
                     ? "preview"
