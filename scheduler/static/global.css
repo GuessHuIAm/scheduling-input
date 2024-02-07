@@ -11,6 +11,26 @@
     --color-danger-variant: #a6130e;
 }
 
+.comment-stripe {
+    background-image: repeating-linear-gradient(
+      45deg,
+        var(--color-comment) 0,
+        var(--color-comment) 0.5rem,
+        var(--color-comment-variant) 0.5rem,
+        var(--color-comment-variant) 1rem
+    );
+}
+
+.event-stripe {
+    background-image: repeating-linear-gradient(
+      45deg,
+        var(--color-event) 0,
+        var(--color-event) 0.5rem,
+        var(--color-event-variant) 0.5rem,
+        var(--color-event-variant) 1rem
+    );
+}
+
 button {
     cursor: pointer;
     font: inherit;
