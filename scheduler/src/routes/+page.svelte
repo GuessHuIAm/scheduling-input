@@ -132,10 +132,28 @@
             "2024-02-08T18:00:00",
             "Preferable",
         ),
+        makeEvent(
+            "icon",
+            "2024-02-07T9:30:00",
+            "2024-02-07T11:00:00",
+            "Not Preferable",
+        ),
+        makeEvent(
+            "icon",
+            "2024-02-08T17:00:00",
+            "2024-02-08T18:00:00",
+            "Preferable",
+        ),
         makeEvent("event-other", "2024-02-09T13:00:00", "2024-02-09T15:00:00"),
         makeEvent("event-other", "2024-02-10T13:00:00", "2024-02-10T15:00:00"),
         makeEvent(
             "comment-other",
+            "2024-02-09T14:00:00",
+            "2024-02-09T15:00:00",
+            "Something Immediately Before",
+        ),
+        makeEvent(
+            "icon",
             "2024-02-09T14:00:00",
             "2024-02-09T15:00:00",
             "Something Immediately Before",
@@ -149,7 +167,7 @@
         makeEvent(
             "icon",
             "2024-02-10T13:00:00",
-            "2024-02-10T14:00:00",
+            "2024-02-10T13:30:00",
             "Something Immediately After",
         ),
     ];
