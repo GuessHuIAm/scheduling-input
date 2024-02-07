@@ -27,6 +27,9 @@
                 document.getElementById("comment").innerHTML,
         };
     });
+
+    
+
     let options = {
         view: "timeGridWeek",
         initialView: "timeGridWeek",
@@ -79,7 +82,10 @@
             currentEnd: "2024-02-12",
         },
 
-        events: [
+        events: [] 
+    };
+
+    let otherEvents = [
             {
                 "id": "1",
                 "start": "2024-02-07T08:00:00",
@@ -144,15 +150,14 @@
                     "type": "comment-other",
                 }
             }
-        ]
-    };
+        ];
 
     let defaultCommentOptions = [
-        "Preferable", // thumbs up?
-        "Not Preferable", // thumbs down? or something more nuetral?
-        "Something Immediately Before", // using << icon?
-        "Something Immediately After", // using >> icon?
-        "Other", // unsure
+        "Preferable", // thumbs up
+        "Not Preferable", // thumbs down
+        "Something Immediately Before", // << icon
+        "Something Immediately After", // >> icon
+        "Other", // comment bubble
     ];
 
     let popupEventStart, popupEventEnd, popupEventId;
@@ -369,18 +374,34 @@
                 calendar.updateEvent(e);
             });
     }
+
     $: colorPreview = selectMode
         ? "var(--color-event)"
         : "var(--color-comment)";
 
     let otherVisibility = false;
     let submit = false;
+    
     function toggleOtherVisibility() {
         otherVisibility = !otherVisibility;
+        console.log("this toggle function has activated!");
+        let eventList = calendar.getEvents();
+        let newEventsReal;
+        if (otherVisibility) {
+            newEventsReal = eventList.concat(otherEvents);
+            calendar.setOption("events", newEventsReal);
+        } else if (!otherVisibility) {
+            eventList.forEach((e) => {
+                if (e.extendedProps.type === "event-other" || e.extendedProps.type === "comment-other") {
+                    calendar.removeEventById(e.id);
+                }
+            });
+        }
+        
     }
-    function submitAvailability() { //figure treating submitting as a one type switch would be fine?
-                                    //feel free to change to a toggle if unsubmitting feels better
-        submit = true;
+
+    function submitAvailability() { 
+        submit = !submit;
     }
 </script>
 
