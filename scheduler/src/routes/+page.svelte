@@ -33,6 +33,10 @@
         selectable: true,
         editable: true,
         allDaySlot: false,
+        displayEventTime: true,
+        slotMinTime: "08:00:00",
+        slotMaxTime: "18:00:00",
+        duration: { days: 6 },
         select: (info) => handleEvent(info, true),
         eventDrop: (info) => handleEvent(info, false),
         eventResize: (info) => handleEvent(info, false),
@@ -66,6 +70,81 @@
                 populatePopupVariables(info.event);
             }
         },
+
+        views: {
+            timeGridWeek: {
+                titleFormat: { year: "numeric", month: "long", day: "numeric" },
+            },
+            currentStart: "2024-02-07",
+            currentEnd: "2024-02-12",
+        },
+
+        events: [
+            {
+                "id": "1",
+                "start": "2024-02-07T08:00:00",
+                "end": "2024-02-07T13:00:00",
+                "display": "background",
+                "backgroundColor": "var(--color-event-others)",
+                "extendedProps": {
+                    "type": "event-other",
+                }
+            }, 
+            {
+                "id": "2",
+                "start": "2024-02-07T10:00:00",
+                "end": "2024-02-07T11:00:00",
+                "display": "background",
+                "backgroundColor": "var(--color-event-others)",
+                "extendedProps": {
+                    "type": "event-other",
+                }
+            },
+            {
+                "id": "3",
+                "start": "2024-02-08T13:00:00",
+                "end": "2024-02-08T15:00:00",
+                "display": "background",
+                "backgroundColor": "var(--color-comment-others)",
+                "title": "Not Preferable",
+                "extendedProps": {
+                    "type": "comment-other",
+                }
+            },
+            {
+                "id": "4",
+                "start": "2024-02-08T17:00:00",
+                "end": "2024-02-08T18:00:00",
+                "display": "background",
+                "backgroundColor": "var(--color-comment-others)",
+                "title": "Preferable",
+                "extendedProps": {
+                    "type": "comment-other",
+                }
+            },
+            {
+                "id": "5",
+                "start": "2024-02-09T13:00:00",
+                "end": "2024-02-09T15:00:00",
+                "display": "background",
+                "backgroundColor": "var(--color-comment-others)",
+                "title": "Something Immediately Before",
+                "extendedProps": {
+                    "type": "comment-other",
+                }
+            },
+            {
+                "id": "6",
+                "start": "2024-02-10T13:00:00",
+                "end": "2024-02-10T15:00:00",
+                "display": "background",
+                "backgroundColor": "var(--color-comment-others)",
+                "title": "Something Immediately After",
+                "extendedProps": {
+                    "type": "comment-other",
+                }
+            }
+        ]
     };
 
     let defaultCommentOptions = [
@@ -245,10 +324,21 @@
         };
     }
 
+    function makeEventObject(type, start, end, title) {
+        return {
+            "id": createEventId(type),
+            "start": start,
+            "end": end,
+            "display": type === "other" ? "background" : "auto",
+            "title": title,
+            "backgroundColor": type === "event" ? "green" : "blue",
+        };
+    }
+
     let selectMode = true;
     $: selectionText = selectMode
-        ? "Drag to select the times you are available."
-        : "Drag to annotate your availability.";
+        ? "Drag to select the times you are available. Click to delete."
+        : "Drag to annotate your availability. Click to edit or delete your comments.";
     function switchPhase() {
         selectMode = !selectMode;
         const events = calendar.getEvents();
