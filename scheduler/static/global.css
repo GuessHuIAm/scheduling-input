@@ -1,14 +1,14 @@
 :root {
     font: 16px/1.5 "Roboto", sans-serif;
-    --color-event: #7992ee;
+    --color-event: #4e69c8;
     --color-event-variant: #354a96;
-    --color-comment: #e7864a;
-    --color-comment-variant: #ac5c2a;
+    --color-comment: #d58c16;
+    --color-comment-variant: #421900;
     --color-preview: #f5f5f5;
     --color-event-others: #1c874c;
     --color-event-others-variant: #0f4e2b;
-    --color-comment-others: #ab6f49;
-    --color-comment-others-variant: #6e3e24;
+    --color-comment-others: #8e491e;
+    --color-comment-others-variant: #6b3518;
     --color-icon-event: transparent;
     --color-danger: #d9534f;
     --color-danger-variant: #a6130e;
@@ -89,26 +89,6 @@ button {
     color: white;
 }
 
-.comment-stripe {
-    background-image: repeating-linear-gradient(
-      45deg,
-        var(--color-comment-others) 0,
-        var(--color-comment-others) 0.5rem,
-        var(--color-comment-others-variant) 0.5rem,
-        var(--color-comment-others-variant) 1rem
-    );
-}
-
-.event-stripe {
-    background-image: repeating-linear-gradient(
-      45deg,
-        var(--color-event-others) 0,
-        var(--color-event-others) 0.5rem,
-        var(--color-event-others-variant) 0.5rem,
-        var(--color-event-others-variant) 1rem
-    );
-}
-
 .submit-button {
     background-color: transparent;
     border: 1px dashed var(--color-event-variant);
@@ -145,7 +125,9 @@ button {
 }
 
 .ec-event.ec-preview {
-    background-color: var(--color-preview);
+    background-color: transparent;
+    border: 2px solid var(--color-preview);
+    border-radius: 5px;
 }
 
 .popup {
@@ -219,32 +201,80 @@ button {
 }
 
 .icon {
-    color: white;
+    color: var(--color-comment-variant);
     width: 15px;
     height: 15px;
     position: absolute;
     top: 0.2rem;
-    right: 0.4rem;
+    right: 0.7rem;
     transition: all 0.3s;
     cursor: pointer;
-}
-
-.icon:hover {
-    width: 17px;
-    height: 17px;
 }
 
 .ec-event-body {
     font-size: 0.9rem;
     font: Roboto, sans-serif;
+    color: inherit;
+    overflow: hidden;
 }
 
-.ec-bg-event .title {
-    padding: 0.2rem;
+.title {
+    padding-left: 0.3rem;
     color: white;
 }
 
-.ec-bg-event.icon-event {
+.ec-bg-event.icon-event, .ec-bg-event.comment-event-other {
     opacity: 1;
     z-index: 5;
+    pointer-events: none;
+}
+
+.ec-bg-event.comment-event {
+    opacity: 0.9;
+}
+
+.comment-event-other .title {
+    color: var(--color-comment-others);
+}
+
+.ec-events .ec-event {
+    padding: 0;
+}
+
+.ec-time, .ec-line {
+    height: 22px;
+}
+
+.comment-body {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    border: 2px solid var(--color-comment-variant);
+    border-radius: 5px;
+}
+
+.comment-body .title {
+    color: var(--color-comment-variant);
+}
+
+.ec-bg-event .comment-other-body {
+    opacity: 1;
+    height: 100%;
+    box-sizing: border-box;
+    border: 2px solid var(--color-comment-others);
+    border-radius: 5px;
+}
+
+.ec-bg-event .ec-event-body {
+    height: 100%;
+    box-sizing: border-box;
+    z-index: 1;
+}
+
+.event-other-body {
+    height: 100%;
+}
+
+.ec-event-body .comment-body .title {
+    padding-right: 0.3rem;
 }

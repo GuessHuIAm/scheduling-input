@@ -45,33 +45,53 @@
             let eventType = info.event.extendedProps.type;
             let iconType = info.event.extendedProps.icon_type;
             if (info.event.display === "auto") {
-                content = {
-                    html: `
-                    <div>${eventType === "comment" ? "" : info.timeText}</div>
-                    <div class="title" title="${info.event.title}">${
-                        info.event.title
-                    }</div>
-                    <div class="icon" id="${info.event.id}">
-                        ${icons[iconType] ? icons[iconType] : ""}
+                if (eventType === "comment") {
+                    content = {
+                        html: `
+                    <div class="comment-body" data-id="${info.event.id}">
+                        <div class="title">${info.event.title}</div>
                     </div>
                     `,
-                };
+                    };
+                } else if (eventType === "event") {
+                    content = {
+                        html: `
+                    <div class="event-body" data-id="${info.event.id}">
+                        <div class="title">${info.timeText}</div>
+                    </div>
+                    `,
+                    };
+                }
             } else if (info.event.display === "background") {
                 if (eventType === "icon") {
                     content = {
                         html: `
-                        <div class="icon" id="${info.event.id}">
+                        <div class="icon" data-id="${info.event.id}">
                             ${icons[iconType] ? icons[iconType] : ""}
                         </div>
                         `,
                     };
-                } else {
+                } else if (
+                    eventType === "comment-other"
+                ) {
                     content = {
                         html: `
-                    <div class='title'>${info.event.title}</div>
-                    <div class="icon" id="${info.event.id}">
-                    </div>
-                    `,
+                        <div class="${eventType}-body" data-id="${info.event.id}">
+                            <div class='title'>${info.event.title}</div>
+                            <div class='icon'>${icons[iconType] ? icons[iconType] : ""}</div>
+                        </div>
+                        `,
+                    };
+                } else if (
+                    eventType === "event-other" ||
+                    eventType === "event-other" ||
+                    eventType === "comment"
+                ) {
+                    content = {
+                        html: `
+                        <div class="${eventType}-body" data-id="${info.event.id}">
+                        </div>
+                        `,
                     };
                 }
             }
@@ -79,18 +99,22 @@
         },
 
         eventDidMount: (info) => {
-            let icon = document.getElementById(info.event.id);
-            let eventType = info.event.extendedProps.type;
+            let events = document.querySelectorAll(
+                `[data-id="${info.event.id}"]`,
+            );
+            for (let event of events) {
+                let eventType = info.event.extendedProps.type;
 
-            if (eventType === "comment-other") {
-                let parent = icon.closest(".ec-bg-event");
-                parent.classList.add("comment-stripe");
-            } else if (eventType === "event-other") {
-                let parent = icon.closest(".ec-bg-event");
-                parent.classList.add("event-stripe");
-            } else if (eventType === "icon") {
-                let parent = icon.closest(".ec-bg-event");
-                parent.classList.add("icon-event");
+                if (eventType === "icon") {
+                    let parent = event.closest(".ec-bg-event");
+                    parent.classList.add("icon-event");
+                } else if (eventType === "comment-other") {
+                    let parent = event.closest(".ec-bg-event");
+                    parent.classList.add("comment-event-other");
+                } else if (eventType === "comment") {
+                    let parent = event.closest(".ec-bg-event");
+                    if (parent)  parent.classList.add("comment-event");
+                }
             }
         },
 
@@ -107,6 +131,12 @@
             currentStart: "2024-02-07",
             currentEnd: "2024-02-12",
         },
+
+        headerToolbar: {
+            start: "",
+            center: "title",
+            end: "",
+        },
     };
 
     let defaultCommentOptions = [
@@ -118,42 +148,24 @@
     ];
 
     let otherEvents = [
-        makeEvent("event-other", "2024-02-07T08:00:00", "2024-02-07T13:00:00"),
-        makeEvent("event-other", "2024-02-07T10:00:00", "2024-02-07T11:00:00"),
+        makeEvent("event-other", "2024-02-10T08:00:00", "2024-02-10T13:00:00"),
+        makeEvent("event-other", "2024-02-10T10:00:00", "2024-02-10T11:00:00"),
         makeEvent(
             "comment-other",
-            "2024-02-07T9:30:00",
-            "2024-02-07T11:00:00",
-            "Not Preferable",
-        ),
-        makeEvent(
-            "comment-other",
-            "2024-02-08T17:00:00",
-            "2024-02-08T18:00:00",
+            "2024-02-09T9:30:00",
+            "2024-02-09T11:00:00",
             "Preferable",
         ),
         makeEvent(
-            "icon",
-            "2024-02-07T9:30:00",
-            "2024-02-07T11:00:00",
-            "Not Preferable",
-        ),
-        makeEvent(
-            "icon",
-            "2024-02-08T17:00:00",
-            "2024-02-08T18:00:00",
+            "comment-other",
+            "2024-02-11T17:00:00",
+            "2024-02-11T18:00:00",
             "Preferable",
         ),
-        makeEvent("event-other", "2024-02-09T13:00:00", "2024-02-09T15:00:00"),
-        makeEvent("event-other", "2024-02-10T13:00:00", "2024-02-10T15:00:00"),
+        makeEvent("event-other", "2024-02-12T13:00:00", "2024-02-12T15:00:00"),
+        makeEvent("event-other", "2024-02-12T13:00:00", "2024-02-12T15:00:00"),
         makeEvent(
             "comment-other",
-            "2024-02-09T14:00:00",
-            "2024-02-09T15:00:00",
-            "Something Immediately Before",
-        ),
-        makeEvent(
-            "icon",
             "2024-02-09T14:00:00",
             "2024-02-09T15:00:00",
             "Something Immediately Before",
@@ -163,23 +175,12 @@
             "2024-02-10T13:00:00",
             "2024-02-10T14:00:00",
             "Something Immediately After",
-        ),
-        makeEvent(
-            "icon",
-            "2024-02-10T13:00:00",
-            "2024-02-10T13:30:00",
-            "Something Immediately After",
-        ),
+        )
     ];
-
-    let commentStartsToList = {};
-    let commentStartsToId = {};
-    let IdToCommentStarts = {};
 
     let popupEventStart, popupEventEnd, popupEventId;
     let popupCommentOption = defaultCommentOptions[0],
         popupComment = defaultCommentOptions[0];
-    // PopupCommentOption would be 'Other' if the user has a comment that is not in the defaultCommentOptions
     let popupVisible = false,
         editingComment = false,
         editingEvent = false;
@@ -192,12 +193,8 @@
             if (event.extendedProps.type === "comment") {
                 editingComment = true;
                 editingEvent = false;
-                popupComment = event.title;
-                popupCommentOption = defaultCommentOptions.includes(
-                    popupComment,
-                )
-                    ? popupComment
-                    : "Other";
+                popupCommentOption = defaultCommentOptions[0],
+                popupComment = defaultCommentOptions[0];
             } else {
                 editingComment = false;
                 editingEvent = true;
@@ -216,7 +213,7 @@
             if (isNewEvent) {
                 calendar.unselect();
                 event = makeEvent("event", info.startStr, info.endStr);
-                calendar.addEvent(event);
+                addEvent(event);
             } else {
                 event = info.event;
             }
@@ -226,26 +223,60 @@
                 calendar.unselect();
                 event = makeEvent("preview", info.startStr, info.endStr);
                 populatePopupVariables(event, true);
-                calendar.addEvent(event);
+                addEvent(event);
             } else {
                 event = info.event;
             }
         }
         event = checkEventOverlap(event);
-        addToCommentStarts(event);
-        calendar.updateEvent(event);
+        updateEvent(event);
     }
 
+    let commentIdToIconId = {};
     function addToCommentStarts(event) {
-        if (event.extendedProps.type === "comment" || event.extendedProps.type === "preview") {
-            let start = new Date(event.start);
-            if (commentStartsToList[start] === undefined) {
-                commentStartsToList[start] = [event.title];
-                // Make an icon event for the start time + 30 minutes
-                // let iconEvent = makeEvent("icon", start, new Date(start.getTime() + 30 * 60000));
+        console.log(event);
+        let type = event.extendedProps.type;
+        if (type === "comment" || type === "comment-other") {
+            let icon = makeEvent(
+                "icon",
+                event.start,
+                event.end,
+                event.title,
+            );
+            console.log(icon);
+            addEvent(icon);
+            commentIdToIconId[event.id] = icon.id;
+        }
+    }
+
+    function updateCommentStarts(event) {
+        let type = event.extendedProps.type;
+        if (type === "comment" || type === "comment-other") {
+            // If the titles are different, remove the old icon and add a new one
+            let icon = calendar.getEventById(commentIdToIconId[event.id]);
+            if (icon.title !== event.title) {
+                removeEvent(icon.id);
+                icon = makeEvent(
+                    "icon",
+                    event.start,
+                    event.end,
+                    event.title,
+                );
+                addEvent(icon);
+                commentIdToIconId[event.id] = icon.id;
             } else {
-                // commentStartsToList[start].push(event.title);
+                icon.start = event.start;
+                icon.end = event.end;
+                updateEvent(icon);
             }
+        }
+    }
+
+    function removeFromCommentStarts(event) {
+        let type = event.extendedProps.type;
+        if (type === "comment") {
+            let icon = calendar.getEventById(commentIdToIconId[event.id]);
+            removeEvent(icon.id);
         }
     }
 
@@ -280,28 +311,38 @@
     }
 
     function removeEvent(id) {
+        console.log("Removing event " + id);
+        removeFromCommentStarts(calendar.getEventById(id));
         calendar.removeEventById(id);
-        let element = document.getElementById(id);
-        if (element) {
-            element.remove();
-        }
+    }
+
+    function addEvent(event) {
+        console.log("Adding event " + event.id);
+        addToCommentStarts(event);
+        calendar.addEvent(event);
+    }
+
+    function updateEvent(event) {
+        console.log("Updating event " + event.id);
+        updateCommentStarts(event);
+        calendar.updateEvent(event);
     }
 
     function addNewComment() {
         const input = document.querySelector("#comment-other");
         let newpopupComment =
-            popupComment == "Other" && input.value != ""
+            popupCommentOption === "Other" && input.value != ""
                 ? input.value
-                : popupComment;
+                : popupCommentOption;
         let event = makeEvent(
             "comment",
             popupEventStart,
             popupEventEnd,
             newpopupComment,
         );
-        calendar.addEvent(event);
+        addEvent(event);
         event = checkEventOverlap(event);
-        calendar.updateEvent(event);
+        updateEvent(event);
         hidePopup();
         removeEvent(popupEventId);
     }
@@ -310,24 +351,29 @@
         const input = document.querySelector("#comment-other");
         removeEvent(popupEventId);
         let newpopupComment =
-            popupComment == "Other" && input.value != ""
+            popupCommentOption === "Other" && input.value != ""
                 ? input.value
-                : popupComment;
+                : popupCommentOption;
         let event = makeEvent(
             "comment",
             popupEventStart,
             popupEventEnd,
             newpopupComment,
         );
-        calendar.addEvent(event);
+        addEvent(event);
         event = checkEventOverlap(event);
-        calendar.updateEvent(event);
+        updateEvent(event);
         hidePopup();
     }
 
     function changeCommentOptions() {
         const options = document.querySelector("#comment-options");
-        popupComment = options.value;
+        popupCommentOption = options.value;
+        if (popupCommentOption === "Other") {
+            popupComment = "";
+        } else {
+            popupComment = popupCommentOption;
+        }
     }
 
     function isTimeOverlap(start1, end1, start2, end2) {
@@ -398,11 +444,11 @@
                 type === "event"
                     ? "var(--color-event)"
                     : type === "comment"
-                      ? "var(--color-comment)"
+                      ? "transparent"
                       : type === "event-other"
                         ? "var(--color-event-others)"
                         : type === "comment-other"
-                          ? "var(--color-comment-others)"
+                          ? "transparent"
                           : type === "icon"
                             ? "var(--color-icon-event)"
                             : "var(--color-preview)",
